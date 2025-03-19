@@ -124,9 +124,178 @@ main()
     }
   });
 
+//5. Create a new professor
+  app.post('/professors', async (c) => {
+    try {
+      const { name, seniority, aadharNumber } = await c.req.json();
+  
+      // Check if a professor with the same aadharNumber already exists
+      const existingProfessor = await prisma.professor.findUnique({
+        where: { aadharNumber },
+      });
+  
+      if (existingProfessor) {
+        return c.json({ error: "Professor with this Aadhar number already exists." }, 400);
+      }
+  
+      // Create new professor
+      const professor = await prisma.professor.create({
+        data: {
+          name,
+          seniority,
+          aadharNumber,
+        },
+      });
+  
+      return c.json({ message: "Professor created successfully", professor }, 201);
+    } catch (error) {
+      console.error("Error creating professor:", error);
+      return c.json({ error: "Internal Server Error" }, 500);
+    }
+  });
+  
 
 
+  //6. Fetch proctorship details for a professor
+  app.get('/professors/:professorId/proctorships', async (c) => {
+    try {
+      const professorId = c.req.param('professorId');
+  
+      // Check if professor exists
+      const professor = await prisma.professor.findUnique({
+        where: { id: professorId },
+        include: { students: true }, // Fetch students under this professor
+      });
+  
+      if (!professor) {
+        return c.json({ error: "Professor not found" }, 404);
+      }
+  
+      return c.json({ 
+        professor: {
+          id: professor.id,
+          name: professor.name,
+          seniority: professor.seniority
+        },
+        students: professor.students
+      });
+    } catch (error) {
+      console.error("Error fetching proctorship details:", error);
+      return c.json({ error: "Internal Server Error" }, 500);
+    }
+  });
+  
 
+  //7. Update student details
+  app.patch('/students/:studentId', async (c) => {
+    try {
+      const studentId = c.req.param('studentId');
+      const data = await c.req.json(); // Get updated data from request body
+  
+      // Check if student exists
+      const existingStudent = await prisma.student.findUnique({
+        where: { id: studentId },
+      });
+  
+      if (!existingStudent) {
+        return c.json({ error: "Student not found" }, 404);
+      }
+  
+      // Update student details
+      const updatedStudent = await prisma.student.update({
+        where: { id: studentId },
+        data, // Updates only the fields provided in the request body
+      });
+  
+      return c.json({ message: "Student updated successfully", student: updatedStudent });
+    } catch (error) {
+      console.error("Error updating student:", error);
+      return c.json({ error: "Internal Server Error" }, 500);
+    }
+  });
+  
+
+  //8.Update professor details
+  app.patch('/professors/:professorId', async (c) => {
+    try {
+      const professorId = c.req.param('professorId');
+      const data = await c.req.json(); // Get updated data from request body
+  
+      // Check if professor exists
+      const existingProfessor = await prisma.professor.findUnique({
+        where: { id: professorId },
+      });
+  
+      if (!existingProfessor) {
+        return c.json({ error: "Professor not found" }, 404);
+      }
+  
+      // Update professor details
+      const updatedProfessor = await prisma.professor.update({
+        where: { id: professorId },
+        data, // Updates only the provided fields
+      });
+  
+      return c.json({ message: "Professor updated successfully", professor: updatedProfessor });
+    } catch (error) {
+      console.error("Error updating professor:", error);
+      return c.json({ error: "Internal Server Error" }, 500);
+    }
+  });
+
+  
+
+  // DELETE /students/:studentId - Deletes a student by their ID
+app.delete('/students/:studentId', async (c) => {
+  try {
+    const studentId = c.req.param('studentId');
+
+    // Check if student exists
+    const existingStudent = await prisma.student.findUnique({
+      where: { id: studentId },
+    });
+
+    if (!existingStudent) {
+      return c.json({ error: "Student not found" }, 404);
+    }
+
+    // Delete student
+    await prisma.student.delete({
+      where: { id: studentId },
+    });
+
+    return c.json({ message: "Student deleted successfully" });
+  } catch (error) {
+    console.error("Error deleting student:", error);
+    return c.json({ error: "Internal Server Error" }, 500);
+  }
+});
+
+// DELETE /professors/:professorId - Deletes a professor by their ID
+app.delete('/professors/:professorId', async (c) => {
+  try {
+    const professorId = c.req.param('professorId');
+
+    // Check if professor exists
+    const existingProfessor = await prisma.professor.findUnique({
+      where: { id: professorId },
+    });
+
+    if (!existingProfessor) {
+      return c.json({ error: "Professor not found" }, 404);
+    }
+
+    // Delete professor
+    await prisma.professor.delete({
+      where: { id: professorId },
+    });
+
+    return c.json({ message: "Professor deleted successfully" });
+  } catch (error) {
+    console.error("Error deleting professor:", error);
+    return c.json({ error: "Internal Server Error" }, 500);
+  }
+});
 
   serve(app, (info) => {
     console.log(`Server is running on http://localhost:${info.port}`);
