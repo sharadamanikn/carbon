@@ -74,8 +74,7 @@ main()
           proctor: true, 
         },
       });
-  
-      return c.json(students, 200);
+    return c.json(students, 200);
     } catch (error) {
       return c.json({ error: 'Failed to fetch students' }, 500);
     }
@@ -98,23 +97,19 @@ main()
   app.post("/students", async (c) => {
     try {
       const { name, dob, aadharNumber, proctorId } = await c.req.json();
-  
       // Check if a student with the same aadharNumber already exists
       const existingStudent = await prisma.student.findUnique({
         where: { aadharNumber },
       });
-  
-      if (existingStudent) {
+    if (existingStudent) {
         return c.json({ error: "Student with this Aadhar number already exists" }, 400);
       }
-  
-      // Create new student
-      const student = await prisma.student.create({
+        const student = await prisma.student.create({
         data: {
           name,
           dob,
           aadharNumber,
-          proctorId, // Ensure this is a valid professor ID
+          proctorId, 
         },
       });
   return c.json(student, 201);
@@ -128,18 +123,14 @@ main()
   app.post('/professors', async (c) => {
     try {
       const { name, seniority, aadharNumber } = await c.req.json();
-  
-      // Check if a professor with the same aadharNumber already exists
-      const existingProfessor = await prisma.professor.findUnique({
+        const existingProfessor = await prisma.professor.findUnique({
         where: { aadharNumber },
       });
   
       if (existingProfessor) {
         return c.json({ error: "Professor with this Aadhar number already exists." }, 400);
       }
-  
-      // Create new professor
-      const professor = await prisma.professor.create({
+        const professor = await prisma.professor.create({
         data: {
           name,
           seniority,
@@ -161,11 +152,10 @@ main()
     try {
       const professorId = c.req.param('professorId');
   
-      // Check if professor exists
       const professor = await prisma.professor.findUnique({
         where: { id: professorId },
-        include: { students: true }, // Fetch students under this professor
-      });
+        include: { students: true }, 
+        });
   
       if (!professor) {
         return c.json({ error: "Professor not found" }, 404);
@@ -190,9 +180,7 @@ main()
   app.patch('/students/:studentId', async (c) => {
     try {
       const studentId = c.req.param('studentId');
-      const data = await c.req.json(); // Get updated data from request body
-  
-      // Check if student exists
+      const data = await c.req.json(); 
       const existingStudent = await prisma.student.findUnique({
         where: { id: studentId },
       });
@@ -200,11 +188,9 @@ main()
       if (!existingStudent) {
         return c.json({ error: "Student not found" }, 404);
       }
-  
-      // Update student details
-      const updatedStudent = await prisma.student.update({
+        const updatedStudent = await prisma.student.update({
         where: { id: studentId },
-        data, // Updates only the fields provided in the request body
+        data, 
       });
   
       return c.json({ message: "Student updated successfully", student: updatedStudent });
@@ -219,21 +205,17 @@ main()
   app.patch('/professors/:professorId', async (c) => {
     try {
       const professorId = c.req.param('professorId');
-      const data = await c.req.json(); // Get updated data from request body
-  
-      // Check if professor exists
-      const existingProfessor = await prisma.professor.findUnique({
+      const data = await c.req.json(); 
+        const existingProfessor = await prisma.professor.findUnique({
         where: { id: professorId },
       });
   
       if (!existingProfessor) {
         return c.json({ error: "Professor not found" }, 404);
       }
-  
-      // Update professor details
-      const updatedProfessor = await prisma.professor.update({
+        const updatedProfessor = await prisma.professor.update({
         where: { id: professorId },
-        data, // Updates only the provided fields
+        data, 
       });
   
       return c.json({ message: "Professor updated successfully", professor: updatedProfessor });
@@ -249,8 +231,6 @@ main()
 app.delete('/students/:studentId', async (c) => {
   try {
     const studentId = c.req.param('studentId');
-
-    // Check if student exists
     const existingStudent = await prisma.student.findUnique({
       where: { id: studentId },
     });
@@ -258,8 +238,6 @@ app.delete('/students/:studentId', async (c) => {
     if (!existingStudent) {
       return c.json({ error: "Student not found" }, 404);
     }
-
-    // Delete student
     await prisma.student.delete({
       where: { id: studentId },
     });
@@ -275,8 +253,6 @@ app.delete('/students/:studentId', async (c) => {
 app.delete('/professors/:professorId', async (c) => {
   try {
     const professorId = c.req.param('professorId');
-
-    // Check if professor exists
     const existingProfessor = await prisma.professor.findUnique({
       where: { id: professorId },
     });
@@ -284,8 +260,6 @@ app.delete('/professors/:professorId', async (c) => {
     if (!existingProfessor) {
       return c.json({ error: "Professor not found" }, 404);
     }
-
-    // Delete professor
     await prisma.professor.delete({
       where: { id: professorId },
     });
@@ -299,15 +273,11 @@ app.delete('/professors/:professorId', async (c) => {
 
 
 
-//11. 
-// POST /professors/:professorId/proctorships
-// Assigns a student under the proctorship of a professor
+//11.  Assigns a student under the proctorship of a professor
 app.post('/professors/:professorId/proctorships', async (c) => {
   try {
     const professorId = c.req.param('professorId');
-    const { studentId } = await c.req.json(); // Get studentId from request body
-
-    // Check if professor exists
+    const { studentId } = await c.req.json(); 
     const existingProfessor = await prisma.professor.findUnique({
       where: { id: professorId },
     });
@@ -315,8 +285,6 @@ app.post('/professors/:professorId/proctorships', async (c) => {
     if (!existingProfessor) {
       return c.json({ error: "Professor not found" }, 404);
     }
-
-    // Check if student exists
     const existingStudent = await prisma.student.findUnique({
       where: { id: studentId },
     });
@@ -324,8 +292,6 @@ app.post('/professors/:professorId/proctorships', async (c) => {
     if (!existingStudent) {
       return c.json({ error: "Student not found" }, 404);
     }
-
-    // Assign student to professor (Update proctorId in Student table)
     await prisma.student.update({
       where: { id: studentId },
       data: { proctorId: professorId },
@@ -342,19 +308,14 @@ app.post('/professors/:professorId/proctorships', async (c) => {
 app.get('/students/:studentId/library-membership', async (c) => {
   try {
     const studentId = c.req.param('studentId');
-
-    // Check if the student exists and fetch their library membership
     const studentWithMembership = await prisma.student.findUnique({
       where: { id: studentId },
       include: { libraryMembership: true },
     });
 
-    // If student doesn't exist, return a 404 error
     if (!studentWithMembership) {
       return c.json({ error: 'Student not found' }, 404);
     }
-
-    // If the student has no library membership, return a 404 error
     if (!studentWithMembership.libraryMembership) {
       return c.json({ error: 'Library membership not found for this student' }, 404);
     }
@@ -373,8 +334,6 @@ app.post('/students/:studentId/library-membership', async (c) => {
   try {
     const studentId = c.req.param('studentId');
     const { issueDate, expiryDate } = await c.req.json();
-
-    // Check if the student exists
     const student = await prisma.student.findUnique({
       where: { id: studentId },
       include: { libraryMembership: true },
@@ -383,13 +342,9 @@ app.post('/students/:studentId/library-membership', async (c) => {
     if (!student) {
       return c.json({ error: 'Student not found' }, 404);
     }
-
-    // Check if the student already has a library membership
     if (student.libraryMembership) {
       return c.json({ error: 'Library membership already exists for this student' }, 400);
     }
-
-    // Create the library membership
     const newMembership = await prisma.libraryMembership.create({
       data: {
         studentId,
@@ -402,6 +357,67 @@ app.post('/students/:studentId/library-membership', async (c) => {
   } catch (error) {
     console.error('Error creating library membership:', error);
     return c.json({ error: 'Internal server error' }, 500);
+  }
+});
+
+
+
+//14. Update library membership details for a student
+app.patch('/students/:studentId/library-membership', async (c) => {
+  try {
+    const studentId = c.req.param('studentId');
+    const { issueDate, expiryDate } = await c.req.json();
+    const student = await prisma.student.findUnique({
+      where: { id: studentId },
+      include: { libraryMembership: true },
+    });
+
+    if (!student) {
+      return c.json({ error: 'Student not found' }, 404);
+    }
+    if (!student.libraryMembership) {
+      return c.json({ error: 'Library membership not found for this student' }, 404);
+    }
+    const updatedMembership = await prisma.libraryMembership.update({
+      where: { studentId },
+      data: {
+        issueDate: issueDate ? new Date(issueDate) : student.libraryMembership.issueDate,
+        expiryDate: expiryDate ? new Date(expiryDate) : student.libraryMembership.expiryDate,
+      },
+    });
+
+    return c.json(updatedMembership, 200);
+  } catch (error) {
+    console.error('Error updating library membership:', error);
+    return c.json({ error: 'Internal server error' }, 500);
+  }
+});
+
+
+//15. Delete library membership for a student
+app.delete("/students/:studentId/library-membership", async (c) => {
+  try {
+    const studentId = c.req.param("studentId");
+    const student = await prisma.student.findUnique({
+      where: { id: studentId },
+      include: { libraryMembership: true },
+    });
+if (!student) {
+      return c.json({ error: "Student not found" }, 404);
+    }
+
+    if (!student.libraryMembership) {
+      return c.json({ error: "Library membership not found for this student" }, 404);
+    }
+
+    await prisma.libraryMembership.delete({
+      where: { studentId },
+    });
+
+    return c.json({ message: "Library membership deleted successfully" }, 200);
+  } catch (error) {
+    console.error("Error deleting library membership:", error);
+    return c.json({ error: "Failed to delete library membership" }, 500);
   }
 });
 
