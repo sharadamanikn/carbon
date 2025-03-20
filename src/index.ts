@@ -97,7 +97,6 @@ main()
   app.post("/students", async (c) => {
     try {
       const { name, dob, aadharNumber, proctorId } = await c.req.json();
-      // Check if a student with the same aadharNumber already exists
       const existingStudent = await prisma.student.findUnique({
         where: { aadharNumber },
       });
